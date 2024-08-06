@@ -11,7 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.reactive.server.WebTestClient;
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 
@@ -24,9 +24,9 @@ public class BaseIntegrationTest {
     @Autowired
     protected GithubPort githubPort;
     @Autowired
-    RepositoriesListerFacade repositoriesListerFacade;
+    protected WebTestClient webTestClient;
     @Autowired
-    protected MockMvc mockMvc;
+    RepositoriesListerFacade repositoriesListerFacade;
 
     @RegisterExtension
     protected static WireMockExtension wireMockServer = WireMockExtension.newInstance()

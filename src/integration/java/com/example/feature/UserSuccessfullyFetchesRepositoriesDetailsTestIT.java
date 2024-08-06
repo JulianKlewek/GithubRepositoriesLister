@@ -3,25 +3,13 @@ package com.example.feature;
 import com.example.BaseIntegrationTest;
 import com.example.repositorieslistgenerator.dto.BranchDetails;
 import com.example.repositorieslistgenerator.dto.RepositoryDetails;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.http.HttpHeaders;
 
-import java.util.Arrays;
 import java.util.List;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlPathTemplate;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.hasSize;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 class UserSuccessfullyFetchesRepositoriesDetailsTestIT extends BaseIntegrationTest {
 
@@ -54,19 +42,13 @@ class UserSuccessfullyFetchesRepositoriesDetailsTestIT extends BaseIntegrationTe
                 new RepositoryDetails("repo3", "TestGithubUser", List.of(
                         new BranchDetails("master", "mastermastermastermastershashasha"),
                         new BranchDetails("dev", "devdevdevdevshashasha"))));
-        ObjectMapper mapper = new ObjectMapper();
-        //when
-        ResultActions perform = mockMvc.perform(get("/github/get-repos/{username}", "TestGithubUser")
-                        .contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andDo(print());
-        List<RepositoryDetails> result = Arrays.asList(mapper.readValue(perform.andReturn().getResponse().getContentAsString(), RepositoryDetails[].class));
-        //then
-        perform.andExpectAll(
-                        status().isOk(),
-                        jsonPath("$", hasSize(2)),
-                        jsonPath("$[*].repositoryName", containsInAnyOrder("repo1", "repo3")),
-                        jsonPath("$[*].branches[*]", hasSize(3)))
-                .andReturn();
-        assertEquals(expectedRepositories, result);
+        //when&then
+        this.webTestClient.get()
+                .uri("/github/get-repos/{username}", "TestGithubUser")
+                .header(HttpHeaders.ACCEPT, APPLICATION_JSON_VALUE)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(RepositoryDetails.class)
+                .isEqualTo(expectedRepositories);
     }
 }
