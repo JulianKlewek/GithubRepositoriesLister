@@ -1,10 +1,9 @@
 package com.example.infrastructure.githubservice;
 
-import com.example.repositorieslistgenerator.GithubPort;
 import com.example.infrastructure.controller.error.NotExistingGithubUserException;
-import com.example.repositorieslistgenerator.dto.Branch;
+import com.example.infrastructure.githubservice.dto.Branch;
 import com.example.repositorieslistgenerator.dto.BranchDetails;
-import com.example.repositorieslistgenerator.dto.Repository;
+import com.example.infrastructure.githubservice.dto.Repository;
 import com.example.repositorieslistgenerator.dto.RepositoryDetails;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +17,7 @@ import reactor.core.publisher.Mono;
 import java.util.List;
 
 @Service
-class GithubApiCallsGenerator implements GithubPort {
+class GithubApiCallsGenerator {
 
     private static final Logger logger = LoggerFactory.getLogger(GithubApiCallsGenerator.class);
     private final WebClient webClient;
@@ -41,7 +40,7 @@ class GithubApiCallsGenerator implements GithubPort {
                 .block();
     }
 
-    public RepositoryDetails fetchRepositoryDetails(Repository repository) {
+    public Mono<RepositoryDetails> fetchRepositoryDetails(Repository repository) {
         String repositoryName = repository.name();
         String ownerName = repository.owner().login();
         logger.info("Fetching repository details for : {}", repositoryName);
@@ -52,6 +51,7 @@ class GithubApiCallsGenerator implements GithubPort {
                 .map(branch -> new BranchDetails(branch.name(), branch.commit().sha()))
                 .collectList()
                 .block();
-        return new RepositoryDetails(repositoryName, ownerName, branchDetailsList);
+        RepositoryDetails repositoryDetails = new RepositoryDetails(repositoryName, ownerName, branchDetailsList);
+        return Mono.just(repositoryDetails);
     }
 }

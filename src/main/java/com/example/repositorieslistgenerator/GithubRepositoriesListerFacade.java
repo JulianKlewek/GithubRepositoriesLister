@@ -1,6 +1,5 @@
 package com.example.repositorieslistgenerator;
 
-import com.example.repositorieslistgenerator.dto.Repository;
 import com.example.repositorieslistgenerator.dto.RepositoryDetails;
 
 import java.util.List;
@@ -15,9 +14,6 @@ class GithubRepositoriesListerFacade implements RepositoriesListerFacade {
 
     @Override
     public List<RepositoryDetails> getUserRepositoriesWithDetails(String username) {
-        List<Repository> repositories = githubPort.fetchNotForkedUserRepositories(username);
-        return repositories.stream()
-                .map(githubPort::fetchRepositoryDetails)
-                .toList();
+        return githubPort.fetchNotForkedRepositoriesWithDetails(username);
     }
 }
