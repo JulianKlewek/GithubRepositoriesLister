@@ -12,9 +12,8 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.util.List;
 
 @Service
 class GithubApiCallsGenerator {
@@ -26,7 +25,7 @@ class GithubApiCallsGenerator {
         this.webClient = webClient.baseUrl(githubBaseUrl).build();
     }
 
-    public List<Repository> fetchNotForkedUserRepositories(String username) {
+    public Flux<RepositoryDetails> fetchNotForkedUserRepositories(String username) {
         logger.info("Fetching repositories for : {}", username);
         return webClient.get()
                 .uri("/users/{username}/repos", username)
@@ -36,22 +35,19 @@ class GithubApiCallsGenerator {
                         ? Mono.error(new NotExistingGithubUserException("Github username not found: " + username))
                         : Mono.error(new RuntimeException(exc.getMessage())))
                 .filter(repository -> !repository.fork())
-                .collectList()
-                .block();
+                .flatMap(this::fetchRepositoryDetails);
     }
 
     public Mono<RepositoryDetails> fetchRepositoryDetails(Repository repository) {
         String repositoryName = repository.name();
         String ownerName = repository.owner().login();
         logger.info("Fetching repository details for : {}", repositoryName);
-        List<BranchDetails> branchDetailsList = this.webClient.get()
+        return this.webClient.get()
                 .uri("/repos/{ownerName}/{repositoryName}/branches", ownerName, repositoryName)
                 .retrieve()
                 .bodyToFlux(Branch.class)
                 .map(branch -> new BranchDetails(branch.name(), branch.commit().sha()))
                 .collectList()
-                .block();
-        RepositoryDetails repositoryDetails = new RepositoryDetails(repositoryName, ownerName, branchDetailsList);
-        return Mono.just(repositoryDetails);
+                .map(branches -> new RepositoryDetails(repositoryName, ownerName, branches));
     }
 }

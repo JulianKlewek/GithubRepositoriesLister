@@ -1,8 +1,7 @@
 package com.example.repositorieslistgenerator;
 
 import com.example.repositorieslistgenerator.dto.RepositoryDetails;
-
-import java.util.List;
+import reactor.core.publisher.Flux;
 
 class GithubRepositoriesListerFacade implements RepositoriesListerFacade {
 
@@ -13,7 +12,7 @@ class GithubRepositoriesListerFacade implements RepositoriesListerFacade {
     }
 
     @Override
-    public List<RepositoryDetails> getUserRepositoriesWithDetails(String username) {
+    public Flux<RepositoryDetails> getUserRepositoriesWithDetails(String username) {
         return githubPort.fetchNotForkedRepositoriesWithDetails(username);
     }
 }
