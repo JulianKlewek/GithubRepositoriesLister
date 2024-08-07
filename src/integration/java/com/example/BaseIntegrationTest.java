@@ -26,7 +26,7 @@ public class BaseIntegrationTest {
     @Autowired
     protected WebTestClient webTestClient;
     @Autowired
-    RepositoriesListerFacade repositoriesListerFacade;
+    protected RepositoriesListerFacade repositoriesListerFacade;
 
     @RegisterExtension
     protected static WireMockExtension wireMockServer = WireMockExtension.newInstance()
