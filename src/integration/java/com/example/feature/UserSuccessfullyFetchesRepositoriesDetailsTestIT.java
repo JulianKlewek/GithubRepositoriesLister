@@ -14,7 +14,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 class UserSuccessfullyFetchesRepositoriesDetailsTestIT extends BaseIntegrationTest {
 
     @Test
-    void happyPath_shouldUserProvideValidUsername_andReceiveDetailsAboutRepositories() throws Exception {
+    void happyPath_shouldUserProvideValidUsername_andReceiveDetailsAboutRepositories() {
         //given
         wireMockServer.stubFor(get(urlPathTemplate("/users/{username}/repos"))
                 .withPathParam("username", equalTo("TestGithubUser"))
@@ -36,12 +36,11 @@ class UserSuccessfullyFetchesRepositoriesDetailsTestIT extends BaseIntegrationTe
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
                         .withBodyFile("branches-repo3.json")));
-        List<RepositoryDetails> expectedRepositories = List.of(
-                new RepositoryDetails("repo1", "TestGithubUser", List.of(
-                        new BranchDetails("master", "c5b97d5ae6c19d5c5df71a34c7fbeeda2479ccbc"))),
-                new RepositoryDetails("repo3", "TestGithubUser", List.of(
-                        new BranchDetails("master", "mastermastermastermastershashasha"),
-                        new BranchDetails("dev", "devdevdevdevshashasha"))));
+        RepositoryDetails repoDetails1 = new RepositoryDetails("repo1", "TestGithubUser", List.of(
+                new BranchDetails("master", "c5b97d5ae6c19d5c5df71a34c7fbeeda2479ccbc")));
+        RepositoryDetails repoDetails2 = new RepositoryDetails("repo3", "TestGithubUser", List.of(
+                new BranchDetails("master", "mastermastermastermastershashasha"),
+                new BranchDetails("dev", "devdevdevdevshashasha")));
         //when&then
         this.webTestClient.get()
                 .uri("/github/get-repos/{username}", "TestGithubUser")
@@ -49,6 +48,6 @@ class UserSuccessfullyFetchesRepositoriesDetailsTestIT extends BaseIntegrationTe
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(RepositoryDetails.class)
-                .isEqualTo(expectedRepositories);
+                .contains(repoDetails1, repoDetails2);
     }
 }

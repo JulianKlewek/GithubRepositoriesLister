@@ -1,10 +1,9 @@
 package com.example.repositorieslistgenerator;
 
 import com.example.repositorieslistgenerator.dto.RepositoryDetails;
-
-import java.util.List;
+import reactor.core.publisher.Flux;
 
 public interface RepositoriesListerFacade {
 
-    List<RepositoryDetails> getUserRepositoriesWithDetails(String username);
+    Flux<RepositoryDetails> getUserRepositoriesWithDetails(String username);
 }

@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
@@ -23,9 +24,12 @@ class GithubRestController {
     }
 
     @GetMapping(value = "/get-repos/{username}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<RepositoryDetails>> getRepositoriesWithBranches(@PathVariable("username") String username) {
-        List<RepositoryDetails> detailedRepositories = repositoriesListerFacade.getUserRepositoriesWithDetails(username);
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(detailedRepositories);
+    public Mono<ResponseEntity<List<RepositoryDetails>>> getRepositoriesWithBranches(@PathVariable("username") String username) {
+        return repositoriesListerFacade.getUserRepositoriesWithDetails(username)
+                .collectList()
+                .map(repos -> ResponseEntity.status(HttpStatus.OK)
+                        .body(repos))
+                .defaultIfEmpty(ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .build());
     }
 }
