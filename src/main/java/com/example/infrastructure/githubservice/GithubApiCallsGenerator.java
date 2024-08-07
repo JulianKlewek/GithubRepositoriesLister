@@ -27,7 +27,7 @@ class GithubApiCallsGenerator {
 
     public Flux<RepositoryDetails> fetchNotForkedUserRepositories(String username) {
         logger.info("Fetching repositories for : {}", username);
-        return webClient.get()
+        return this.webClient.get()
                 .uri("/users/{username}/repos", username)
                 .retrieve()
                 .bodyToFlux(Repository.class)
